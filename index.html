@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <script src="./3rdparty/angularjs/angular.min.js" type="text/javascript"></script>
+    <!-- <script src="./3rdparty/angularjs/angular.js" type="text/javascript"></script> -->
+    <script src="./3rdparty/angularjs/angular-cookies.min.js" type="text/javascript"></script>
+    <script src="./3rdparty/js-xlsx/shim.js" type="text/javascript"></script>
+    <script src="./3rdparty/js-xlsx/xlsx.full.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="./3rdparty/bootstrap/bootstrap.min.css"/>
+    <link rel="stylesheet" href="./3rdparty/ng-handsontable/handsontable.full.min.css"/>
+    <script src="./3rdparty/ng-handsontable/handsontable.full.min.js" type="text/javascript"></script>
+    <script src="./3rdparty/ng-handsontable/ngHandsontable.min.js" type="text/javascript"></script>
+
+
+    <link rel="stylesheet" href="./css/main.css"/>
+    <script src="./js/app/app.module.js" type="text/javascript"></script>
+    <script src="./js/app/services/excel.factory.js?v=1.2" type="text/javascript"></script>
+    <script src="./js/app/app.controller.js?v=1.2" type="text/javascript"></script>
+    <script src="./js/app/app.directive.js" type="text/javascript"></script>
+
+    <title>Расчет КИД</title>
+</head>
+<body>
+    <div class="excel-main" ng-app="app">
+        <div ng-controller="excelController as vm">
+            <div>
+                <label>
+                    <span>Вес исполнения поручений:</span>
+                    <input type="number" class="form-control" value="45" min="0" max="100" ng-model="vm.assignmentKid" ng-disabled="vm.loading"/>
+                </label>
+                <label>
+                    <span>Корректирующий допуск:</span>
+                    <input type="number" class="form-control" value="10" min="0" max="100" ng-model="vm.executionDocPercent" ng-disabled="vm.loading"/>
+                </label>
+                <label>
+                    <span>Вес исполнения по<br/>процедурам документооборота:</span>
+                    <input type="number" class="form-control" value="35" min="0" max="100" ng-model="vm.executionDocKid" ng-disabled="vm.loading"/>
+                </label>
+                <input type="button" class="btn btn-secondary" value="Пересчитать" ng-disabled="vm.loading" ng-if="vm.excelTable.length > 0" ng-click="vm.reloadTable()"/>
+            </div>
+
+            <div class="input-file">
+                <input type="file" class="file-upload" import-sheet-js="" on-load-excel="vm.loadExcel(workbook)" multiple="false" ng-disabled="vm.loading" />
+            </div>
+
+            <div ng-if="vm.loading">
+                <img src="./images/loading-spinner.gif"/>
+            </div>
+
+            <div ng-if="vm.isError && !vm.loading">
+                <div class="alert alert-danger" role="alert">
+                    Ошибка чтения файла!
+                </div>
+            </div>
+
+            <div ng-if="vm.excelTable.length > 0 && !vm.loading && !vm.isError">
+                <div>
+                    <input type="button" class="btn btn-secondary" value="Выгрузить в Excel" ng-click="vm.exportExcel()"/>
+                </div>
+
+                <hot-table settings="{colHeaders: colHeaders, columnSorting: true, sortIndicator: true, manualColumnResize: true}"
+                        row-headers="false"
+                        min-spare-rows="minSpareRows"
+                        datarows="vm.excelTable"
+                        height="auto"
+                        width="auto">
+                    <hot-column data="Name" title="'ФИО'" read-only width="400"></hot-column>
+                    <hot-column data="DoneCountPercent" title="'Процент выполнения<br>поручений'" read-only width="170"></hot-column>
+                    <hot-column data="AssignmentKid" title="'КИД по<br>поручениям'" read-only width="140"></hot-column>
+                    <hot-column data="ExecutionDocPercent" title="'Процент исполнения<br>по процедурам<br>документооборота'" read-only width="160"></hot-column>
+                    <hot-column data="ExecutionDocKid" title="'КИД по<br>процедурам<br>документооборота'" read-only width="150"></hot-column>
+                    <hot-column data="TotalKid" title="'Итого КИД'" read-only width="130"></hot-column>
+                </hot-table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
