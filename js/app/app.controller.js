@@ -48,7 +48,7 @@
             $scope.$apply();
             
             if ($window.Worker) {
-                var worker = new Worker('./js/app/parse-excel.worker.js');
+                var worker = new Worker('/_layouts/15/xlsx-kid/js/app/parse-excel.worker.js');
 
                 worker.onmessage = function(e) {
                     if (e.data == null) {
@@ -74,8 +74,18 @@
         }
 
         function exportExcel() {
-            var ws = XLSX.utils.json_to_sheet(vm.excelTable);//, { header: [
+            var ws = XLSX.utils.json_to_sheet(vm.excelTable);
             
+            for (var prop in ws) {
+                if (ws.hasOwnProperty(prop)) {
+                    if (ws[prop].v && angular.isString(ws[prop].v) && ws[prop].v.indexOf('%') !== -1) {
+                        ws[prop].v = ws[prop].v.replace(/\%/g, '');
+                        ws[prop].t = 'n';
+                        angular.extend(ws[prop], { z: '0.00\\%' });
+                    }
+                } 
+            }
+
             var headers = [
                 'ФИО',
                 'Выполнено в срок (кол-во)',
